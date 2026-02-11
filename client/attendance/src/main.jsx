@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Admin from "./Admin";
 
 import App from "./App";
 import Login from "./Login";
@@ -14,6 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/admin" element={<Admin />} />
     </Routes>
   </BrowserRouter>
 );
