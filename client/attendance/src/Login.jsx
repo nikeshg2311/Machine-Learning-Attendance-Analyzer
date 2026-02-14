@@ -1,31 +1,41 @@
 import { useState } from "react";
 import axios from "axios";
-import Dashboard from "./Dashboard";
+
 
 function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
+
 
 
   const handleLogin = async () => {
   try {
-    await axios.post(
+
+    const res = await axios.post(
       "http://localhost:5000/api/auth/login",
       { email, password }
     );
 
-    window.location.href = "/dashboard";
+    const user = res.data;
+
+    // ⭐ SAVE USER ROLE
+    localStorage.setItem("role", user.role);
+    localStorage.setItem("email", user.email);
+
+    // ⭐ AUTO REDIRECT BASED ON ROLE
+    if (user.role === "admin" || user.role === "teacher") {
+      window.location.href = "/admin";
+    } else {
+      window.location.href = "/dashboard";
+    }
 
   } catch (err) {
     alert("Invalid Credentials");
   }
 };
 
-  if (loggedIn) {
-    return <Dashboard />;
-  } 
+
 
 
   return (

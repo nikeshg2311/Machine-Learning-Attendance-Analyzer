@@ -11,15 +11,22 @@ function Dashboard() {
   const [attendancePercent, setAttendancePercent] = useState(0);
   const [riskStatus, setRiskStatus] = useState("");
   const [animatedPercent, setAnimatedPercent] = useState(0);
+  const role = localStorage.getItem("role");
+  const [studentName, setStudentName] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+
+
 
 
   const saveAttendance = async () => {
     try {
       await axios.post("http://localhost:5000/api/attendance/add", {
-        email: "test@gmail.com",
-        subject,
-        date,
-        status
+          name: studentName,
+          email: studentEmail,
+          subject,
+          date,
+          status
+
       });
 
       alert("Attendance Saved");
@@ -57,9 +64,16 @@ function Dashboard() {
 
 
   const fetchAttendance = async () => {
-    const res = await axios.get(
-      "http://localhost:5000/api/attendance/all"
-    );
+    const role = localStorage.getItem("role");
+const loggedEmail = localStorage.getItem("email");
+
+const url =
+  role === "student"
+    ? `http://localhost:5000/api/attendance/student/${loggedEmail}`
+    : "http://localhost:5000/api/attendance/all";
+
+const res = await axios.get(url);
+
     setRecords(res.data);
     calculateAI(res.data);
   };
@@ -89,26 +103,38 @@ function Dashboard() {
 
     <h1 className="title">AI Attendance Analyzer</h1>
 
-    <div className="formBox">
-
-      <input
-        placeholder="Subject"
-        onChange={(e) => setSubject(e.target.value)}
+    {role !== "student" && (
+  <div className="formBox">
+    <input
+        placeholder="Student Name"
+        onChange={(e) => setStudentName(e.target.value)}
       />
 
       <input
-        type="date"
-        onChange={(e) => setDate(e.target.value)}
+        placeholder="Student Email"
+        onChange={(e) => setStudentEmail(e.target.value)}
       />
 
-      <select onChange={(e) => setStatus(e.target.value)}>
-        <option>Present</option>
-        <option>Absent</option>
-      </select>
 
-      <button onClick={saveAttendance}>Save Attendance</button>
+    <input
+      placeholder="Subject"
+      onChange={(e) => setSubject(e.target.value)}
+    />
 
-    </div>
+    <input
+      type="date"
+      onChange={(e) => setDate(e.target.value)}
+    />
+
+    <select onChange={(e) => setStatus(e.target.value)}>
+      <option>Present</option>
+      <option>Absent</option>
+    </select>
+
+    <button onClick={saveAttendance}>Save Attendance</button>
+
+  </div>
+)}
     <div
         className="aiCard"
         style={{ borderColor: getRiskColor() }}
@@ -135,7 +161,7 @@ function Dashboard() {
 
       {records.map((r, index) => (
         <div key={index} className="recordItem">
-          {r.subject} - {r.date} - {r.status}
+          {r.name} | {r.email} | {r.subject} | {r.date} | {r.status}
         </div>
       ))}
     </div>
