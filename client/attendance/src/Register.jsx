@@ -1,5 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import "./Register.css";
 
 function Register() {
 
@@ -27,30 +29,35 @@ function Register() {
 
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h2>Register</h2>
+    <div className="registerPage">
+      <div className="registerCard">
+        <h2>Register</h2>
 
-      <input placeholder="Name"
-        onChange={(e) => setName(e.target.value)} />
-      <br /><br />
+        <input
+          placeholder="Name"
+          onChange={(e) => setName(e.target.value)}
+        />
 
-      <input placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)} />
-      <br /><br />
+        <input
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <input type="password" placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)} />
-      <br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <select onChange={(e) => setRole(e.target.value)}>
-        <option value="student">Student</option>
-        <option value="teacher">Teacher</option>
-        <option value="admin">Admin</option>
-      </select>
+        <select onChange={(e) => setRole(e.target.value)}>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="admin">Admin</option>
+        </select>
 
-      <br /><br />
-
-      <button onClick={handleRegister}>Register</button>
+        <button className="registerPrimaryBtn" onClick={handleRegister}>Register</button>
+        <Link className="loginBackBtn" to="/login">Back to Login</Link>
+      </div>
     </div>
   );
 }

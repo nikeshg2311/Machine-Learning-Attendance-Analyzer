@@ -1,0 +1,45 @@
+.teacherContainer {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(180deg, #0b1020 0%, #111827 100%);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+.teacherForm input,
+.teacherForm select {
+  margin: 5px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+.teacherForm input::placeholder {
+  color: #9ca3af;
+}
+
+.teacherForm button {
+  background: #22c55e;
+  color: #052e16;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.teacherForm button:hover {
+  background: #16a34a;
+}
+
+.recordCard {
+  max-width: 720px;
+  margin: 10px auto;
+  padding: 12px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #111827;
+  color: #d1d5db;
+}

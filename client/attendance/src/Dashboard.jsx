@@ -75,7 +75,26 @@ const url =
 const res = await axios.get(url);
 
     setRecords(res.data);
-    calculateAI(res.data);
+    if (role === "student") {
+
+    const ml = await axios.get(
+      `http://localhost:5000/api/attendance/ml/${loggedEmail}`
+    );
+
+    const probability = ml.data.probability;
+
+    const percent = Math.round(probability * 100);
+
+    setAttendancePercent(percent);
+
+    if (probability > 0.7) {
+      setRiskStatus("AT RISK 🔴");
+    } else if (probability > 0.4) {
+      setRiskStatus("WARNING 🟡");
+    } else {
+      setRiskStatus("SAFE 🟢");
+    }
+  }
   };
 
   useEffect(() => {
@@ -99,7 +118,7 @@ const res = await axios.get(url);
 
 
   return (
-  <div className="container">
+  <div className={`container ${role === "student" ? "studentUI" : "teacherUI"}`}>
 
     <h1 className="title">AI Attendance Analyzer</h1>
 
@@ -135,26 +154,31 @@ const res = await axios.get(url);
 
   </div>
 )}
-    <div
-        className="aiCard"
-        style={{ borderColor: getRiskColor() }}
-    >
+    {role === "student" && (
+  <div
+    className="aiCard"
+    style={{ borderColor: getRiskColor() }}
+  >
 
+    <h2>AI Analytics</h2>
+    <div className="aiBadge">🤖 AI Prediction Active</div>
 
-      <h2>AI Analytics</h2>
-      <div className="aiBadge">🤖 AI Prediction Active</div>
-
-      <div className="progressBar">
-        <div
-          className="progressFill"
-          style={{ width: `${animatedPercent}%`,background:getRiskColor() }}
-        ></div>
-      </div>
-
-      <h3>{animatedPercent}% Attendance</h3>
-      <h3 className="risk">{riskStatus}</h3>
-
+    <div className="progressBar">
+      <div
+        className="progressFill"
+        style={{
+          width: `${animatedPercent}%`,
+          background: getRiskColor()
+        }}
+      ></div>
     </div>
+
+    <h3>{animatedPercent}% Attendance</h3>
+    <h3 className="risk">{riskStatus}</h3>
+
+  </div>
+)}
+
 
     <div className="records">
       <h2>Attendance Records</h2>

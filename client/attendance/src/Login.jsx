@@ -1,5 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import "./Login.css";
 
 
 function Login() {
@@ -24,11 +26,15 @@ function Login() {
     localStorage.setItem("email", user.email);
 
     // ⭐ AUTO REDIRECT BASED ON ROLE
-    if (user.role === "admin" || user.role === "teacher") {
-      window.location.href = "/admin";
-    } else {
-      window.location.href = "/dashboard";
-    }
+          if (user.role === "admin") {
+        window.location.href = "/admin";
+      }
+      else if (user.role === "teacher") {
+        window.location.href = "/teacher";
+      }
+      else {
+        window.location.href = "/dashboard";
+      }
 
   } catch (err) {
     alert("Invalid Credentials");
@@ -39,24 +45,25 @@ function Login() {
 
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h2>Student Login</h2>
+    <div className="loginPage">
+      <div className="loginCard">
+        <h2>Student Login</h2>
 
-      <input
-        type="email"
-        placeholder="Enter Email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <br /><br />
+        <input
+          type="email"
+          placeholder="Enter Email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <input
-        type="password"
-        placeholder="Enter Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br /><br />
+        <input
+          type="password"
+          placeholder="Enter Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <button onClick={handleLogin}>Login</button>
+        <button className="loginBtn" onClick={handleLogin}>Login</button>
+        <Link className="registerBtn" to="/register">Register</Link>
+      </div>
     </div>
   );
 }

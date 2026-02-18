@@ -1,23 +1,26 @@
-import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
+import Dashboard from "./Dashboard";
+import TeacherDashboard from "./TeacherDashboard";
+import Admin from "./Admin";
 
 function App() {
-
-  const [showLogin, setShowLogin] = useState(true);
-
   return (
-    <div>
+    <Router>
+      <Routes>
 
-      {showLogin ? <Login /> : <Register />}
+        {/* ⭐ DEFAULT PAGE */}
+        <Route path="/" element={<Login />} />
 
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <button onClick={() => setShowLogin(!showLogin)}>
-          {showLogin ? "Go to Register" : "Go to Login"}
-        </button>
-      </div>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/teacher" element={<TeacherDashboard />} />
+        <Route path="/admin" element={<Admin />} />
 
-    </div>
+      </Routes>
+    </Router>
   );
 }
 

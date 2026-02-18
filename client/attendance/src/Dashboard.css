@@ -85,3 +85,39 @@ body {
   background: rgba(255,255,255,0.1);
   border-radius: 8px;
 }
+
+/* 👨‍🎓 STUDENT AI THEME */
+.studentUI {
+  background: linear-gradient(135deg,#1e1b4b,#020617);
+  min-height: 100vh;
+  color: white;
+}
+
+/* 👩‍🏫 TEACHER MANAGEMENT THEME */
+.teacherUI {
+  background: #f1f5f9;
+  min-height: 100vh;
+  color: #111827;
+}
+
+/* Teacher form look */
+.teacherUI .formBox input,
+.teacherUI .formBox select {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: black;
+}
+
+.teacherUI .formBox button {
+  background: #2563eb;
+}
+
+/* Records styling difference */
+.teacherUI .recordItem {
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.studentUI .recordItem {
+  background: rgba(255,255,255,0.08);
+}
