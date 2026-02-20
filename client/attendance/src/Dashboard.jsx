@@ -185,7 +185,7 @@ const res = await axios.get(url);
 
       {records.map((r, index) => (
         <div key={index} className="recordItem">
-          {r.name} | {r.email} | {r.subject} | {r.date} | {r.status}
+          {r.name} | {r.email} | {r.subject} | {new Date(r.date).toLocaleDateString()} | {r.status}
         </div>
       ))}
     </div>

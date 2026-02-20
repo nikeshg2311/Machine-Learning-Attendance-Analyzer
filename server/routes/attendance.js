@@ -71,19 +71,34 @@ const axios = require("axios");
 
 router.get("/ml/:email", async (req,res)=>{
 
-   const Attendance = require("../models/Attendance");
+  try {
 
-   const data = await Attendance.find({email:req.params.email});
+    const email = req.params.email;
 
-   const total = data.length;
-   const present = data.filter(d=>d.status==="Present").length;
+    // ⭐ LAST 30 DAYS DATE
+    const last30Days = new Date();
+    last30Days.setDate(last30Days.getDate() - 30);
 
-   // ⭐ CALL PYTHON ML API
-   const ml = await axios.get(
-     `http://localhost:8000/predict?total=${total}&present=${present}`
-   );
+    // ⭐ FILTER ONLY RECENT RECORDS
+    const data = await Attendance.find({
+      email: email,
+      date: { $gte: last30Days }
+    });
 
-   res.send(ml.data);
+    const total = data.length;
+    const present = data.filter(d=>d.status==="Present").length;
+
+    // CALL PYTHON ML SERVER
+    const ml = await axios.get(
+      `http://localhost:8000/predict?total=${total}&present=${present}`
+    );
+
+    res.send(ml.data);
+
+  } catch(err){
+    console.log(err);
+    res.status(500).send("ML Error");
+  }
 });
 
   module.exports = router;

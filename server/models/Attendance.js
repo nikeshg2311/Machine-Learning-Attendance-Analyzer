@@ -4,7 +4,7 @@ const AttendanceSchema = new mongoose.Schema({
   name: String,      // ⭐ ADD THIS
   email: String,
   subject: String,
-  date: String,
+  date: Date,
   status: String
 });
 
