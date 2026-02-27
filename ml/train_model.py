@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 import joblib
 
-# Dummy training data (later you can replace with real data)
+
 data = {
     "total_classes": [10,20,30,40,50,60,70,80],
     "present_classes": [8,12,15,20,30,40,55,70],
