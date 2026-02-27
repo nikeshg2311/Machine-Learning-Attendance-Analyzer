@@ -20,3 +20,5 @@ model.fit(X,y)
 joblib.dump(model,"model.pkl")
 
 print("Model Trained & Saved")
+
+#uvicorn app:app --reload --port 8000

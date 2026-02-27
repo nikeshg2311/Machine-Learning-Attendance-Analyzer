@@ -1,6 +1,7 @@
   const express = require("express");
   const router = express.Router();
   const Attendance = require("../models/Attendance");
+  const RiskReason = require("../models/RiskReason");
 
   // SAVE ATTENDANCE
   router.post("/add", async (req, res) => {
@@ -98,6 +99,45 @@ router.get("/ml/:email", async (req,res)=>{
   } catch(err){
     console.log(err);
     res.status(500).send("ML Error");
+  }
+});
+
+router.post("/risk-reason", async (req, res) => {
+  try {
+    const { name, email, reasonType, reasonText, proofImage } = req.body;
+
+    if (!email || !reasonType || !reasonText) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    const needsProof = reasonType === "OD" || reasonType === "Medical Leave";
+    if (needsProof && !proofImage) {
+      return res.status(400).send("Proof image is required");
+    }
+
+    const record = new RiskReason({
+      name: name || email.split("@")[0],
+      email,
+      reasonType,
+      reasonText,
+      proofImage: proofImage || ""
+    });
+
+    await record.save();
+    res.send("Risk reason saved");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error");
+  }
+});
+
+router.get("/risk-reason/all", async (req, res) => {
+  try {
+    const data = await RiskReason.find().sort({ createdAt: -1 });
+    res.json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error");
   }
 });
 

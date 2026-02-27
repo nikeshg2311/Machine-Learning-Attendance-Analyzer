@@ -43,3 +43,21 @@
   background: #111827;
   color: #d1d5db;
 }
+
+.riskCard {
+  max-width: 720px;
+  margin: 10px auto;
+  padding: 12px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.riskProofImage {
+  display: block;
+  margin-top: 10px;
+  max-width: 260px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+}

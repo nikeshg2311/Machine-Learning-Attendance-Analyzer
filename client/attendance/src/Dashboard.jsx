@@ -11,6 +11,10 @@ function Dashboard() {
   const [attendancePercent, setAttendancePercent] = useState(0);
   const [riskStatus, setRiskStatus] = useState("");
   const [animatedPercent, setAnimatedPercent] = useState(0);
+  const [riskReasonType, setRiskReasonType] = useState("OD");
+  const [otherReason, setOtherReason] = useState("");
+  const [proofImage, setProofImage] = useState("");
+  const [reasonSubmitted, setReasonSubmitted] = useState(false);
   const role = localStorage.getItem("role");
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
@@ -37,6 +41,9 @@ function Dashboard() {
     }
   };
   const getRiskColor = () => {
+      if (riskStatus.includes("AT RISK")) return "#ef4444";
+      if (riskStatus.includes("WARNING")) return "#facc15";
+      if (riskStatus.includes("SAFE")) return "#22c55e";
       if (attendancePercent >= 75) return "#22c55e"; 
       if (attendancePercent >= 60) return "#facc15"; 
       return "#ef4444"; 
@@ -76,25 +83,104 @@ const res = await axios.get(url);
 
     setRecords(res.data);
     if (role === "student") {
+    const total = res.data.length;
+    const present = res.data.filter((d) => d.status === "Present").length;
+    const actualPercent = total ? Math.round((present / total) * 100) : 0;
+    setAttendancePercent(actualPercent);
 
     const ml = await axios.get(
       `http://localhost:5000/api/attendance/ml/${loggedEmail}`
     );
 
     const probability = ml.data.probability;
+    const isMlRisk = ml.data.risk === 1 || probability >= 0.5;
+    const sortedByDateDesc = [...res.data].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    const latestDateValue = sortedByDateDesc.length
+      ? new Date(sortedByDateDesc[0].date).toDateString()
+      : null;
+    const latestDayRecords = latestDateValue
+      ? sortedByDateDesc.filter((r) => new Date(r.date).toDateString() === latestDateValue)
+      : [];
+    const latestDayAbsences = latestDayRecords.filter((r) => r.status === "Absent").length;
+    const allLatestDayAbsent =
+      latestDayRecords.length > 0 && latestDayAbsences === latestDayRecords.length;
 
-    const percent = Math.round(probability * 100);
-
-    setAttendancePercent(percent);
-
-    if (probability > 0.7) {
+    if (allLatestDayAbsent) {
       setRiskStatus("AT RISK 🔴");
-    } else if (probability > 0.4) {
+      return;
+    }
+
+    if (latestDayAbsences > 0) {
       setRiskStatus("WARNING 🟡");
-    } else {
+      return;
+    }
+
+    if (actualPercent >= 75) {
       setRiskStatus("SAFE 🟢");
+    } else if (actualPercent >= 60) {
+      setRiskStatus(isMlRisk ? "WARNING 🟡" : "SAFE 🟢");
+    } else {
+      setRiskStatus(isMlRisk ? "AT RISK 🔴" : "WARNING 🟡");
     }
   }
+  };
+
+  const submitRiskReason = async () => {
+    try {
+      const fallbackName = records.length ? records[0].name : "";
+      const fallbackEmail = records.length ? records[0].email : "";
+      const loggedName = localStorage.getItem("name") || fallbackName || (fallbackEmail ? fallbackEmail.split("@")[0] : "");
+      const loggedEmail = localStorage.getItem("email") || fallbackEmail;
+      const finalReason = riskReasonType === "Others" ? otherReason.trim() : riskReasonType;
+      const needsProof = riskReasonType === "OD" || riskReasonType === "Medical Leave";
+
+      if (!finalReason) {
+        alert("Please enter reason");
+        return;
+      }
+
+      if (needsProof && !proofImage) {
+        alert("Please upload proof image");
+        return;
+      }
+
+      await axios.post("http://localhost:5000/api/attendance/risk-reason", {
+        name: loggedName,
+        email: loggedEmail,
+        reasonType: riskReasonType,
+        reasonText: finalReason,
+        proofImage
+      });
+
+      setReasonSubmitted(true);
+      setProofImage("");
+      setOtherReason("");
+      alert("Reason submitted");
+    } catch (err) {
+      const serverMessage = err?.response?.data;
+      const message = typeof serverMessage === "string" ? serverMessage : "Error submitting reason";
+      alert(message);
+    }
+  };
+
+  const onProofFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file");
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProofImage(reader.result || "");
+      setReasonSubmitted(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -178,6 +264,49 @@ const res = await axios.get(url);
 
   </div>
 )}
+
+    {role === "student" && riskStatus.includes("AT RISK") && (
+      <div className="riskReasonBox">
+        <h3>Reason for the risk?</h3>
+        <select
+          value={riskReasonType}
+          onChange={(e) => {
+            setRiskReasonType(e.target.value);
+            setReasonSubmitted(false);
+            setProofImage("");
+          }}
+        >
+          <option>OD</option>
+          <option>Medical Leave</option>
+          <option>Others</option>
+        </select>
+
+        {riskReasonType === "Others" && (
+          <input
+            placeholder="Enter reason"
+            value={otherReason}
+            onChange={(e) => {
+              setOtherReason(e.target.value);
+              setReasonSubmitted(false);
+            }}
+          />
+        )}
+
+        {(riskReasonType === "OD" || riskReasonType === "Medical Leave") && (
+          <div className="proofUpload">
+            <p>
+              {riskReasonType === "OD"
+                ? "Upload OD proof (image)"
+                : "Upload medical certificate (image)"}
+            </p>
+            <input type="file" accept="image/*" onChange={onProofFileChange} />
+          </div>
+        )}
+
+        <button onClick={submitRiskReason}>Submit</button>
+        {reasonSubmitted && <p>Submitted successfully.</p>}
+      </div>
+    )}
 
 
     <div className="records">

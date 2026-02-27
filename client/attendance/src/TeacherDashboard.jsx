@@ -10,6 +10,7 @@ function TeacherDashboard() {
   const [date,setDate]=useState("");
   const [status,setStatus]=useState("Present");
   const [records,setRecords]=useState([]);
+  const [riskReasons, setRiskReasons] = useState([]);
 
   const saveAttendance = async () => {
     await axios.post("http://localhost:5000/api/attendance/add",{
@@ -28,8 +29,14 @@ function TeacherDashboard() {
     setRecords(res.data);
   };
 
+  const fetchRiskReasons = async () => {
+    const res = await axios.get("http://localhost:5000/api/attendance/risk-reason/all");
+    setRiskReasons(res.data);
+  };
+
   useEffect(()=>{
     fetchRecords();
+    fetchRiskReasons();
   },[]);
 
   return (
@@ -56,6 +63,16 @@ function TeacherDashboard() {
       {records.map((r,i)=>(
         <div key={i} className="recordCard">
           {r.email} | {r.subject} | {r.date} | {r.status}
+        </div>
+      ))}
+
+      <h2>Students At Risk</h2>
+      {riskReasons.map((r, i) => (
+        <div key={i} className="riskCard">
+          <p>{r.name} | {r.email} | {r.reasonText}</p>
+          {(r.reasonType === "OD" || r.reasonType === "Medical Leave") && r.proofImage && (
+            <img className="riskProofImage" src={r.proofImage} alt="Submitted proof" />
+          )}
         </div>
       ))}
 

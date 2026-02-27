@@ -121,3 +121,38 @@ body {
 .studentUI .recordItem {
   background: rgba(255,255,255,0.08);
 }
+
+.riskReasonBox {
+  margin: 20px auto;
+  width: 380px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.riskReasonBox select,
+.riskReasonBox input {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+.riskReasonBox button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.proofUpload {
+  margin: 10px 0;
+  text-align: left;
+}
+
+.proofUpload p {
+  margin: 4px 0 8px;
+}
