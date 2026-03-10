@@ -1,48 +1,34 @@
 import { useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "./api";
 import "./Login.css";
 
-
 function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-
-
   const handleLogin = async () => {
-  try {
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      const { token, user } = res.data;
 
-    const res = await axios.post(
-      "http://localhost:5000/api/auth/login",
-      { email, password }
-    );
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("name", user.name);
 
-    const user = res.data;
-
-    // ⭐ SAVE USER ROLE
-    localStorage.setItem("role", user.role);
-    localStorage.setItem("email", user.email);
-
-    // ⭐ AUTO REDIRECT BASED ON ROLE
-          if (user.role === "admin") {
+      if (user.role === "admin") {
         window.location.href = "/admin";
-      }
-      else if (user.role === "teacher") {
+      } else if (user.role === "teacher") {
         window.location.href = "/teacher";
-      }
-      else {
+      } else {
         window.location.href = "/dashboard";
       }
-
-  } catch (err) {
-    alert("Invalid Credentials");
-  }
-};
-
-
-
+    } catch (err) {
+      const message = err?.response?.data?.message || "Invalid credentials";
+      alert(message);
+    }
+  };
 
   return (
     <div className="loginPage">
@@ -61,8 +47,12 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button className="loginBtn" onClick={handleLogin}>Login</button>
-        <Link className="registerBtn" to="/register">Register</Link>
+        <button className="loginBtn" onClick={handleLogin}>
+          Login
+        </button>
+        <Link className="registerBtn" to="/register">
+          Register
+        </Link>
       </div>
     </div>
   );
