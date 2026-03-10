@@ -25,7 +25,10 @@ function Login() {
         window.location.href = "/dashboard";
       }
     } catch (err) {
-      const message = err?.response?.data?.message || "Invalid credentials";
+      const message =
+        err?.response?.data?.errors?.[0]?.msg ||
+        err?.response?.data?.message ||
+        "Invalid credentials";
       alert(message);
     }
   };

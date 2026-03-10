@@ -21,7 +21,10 @@ function Register() {
       alert("Registered successfully");
       window.location.href = "/login";
     } catch (err) {
-      const message = err?.response?.data?.message || "Registration failed";
+      const message =
+        err?.response?.data?.errors?.[0]?.msg ||
+        err?.response?.data?.message ||
+        "Registration failed";
       alert(message);
     }
   };
@@ -33,7 +36,11 @@ function Register() {
 
         <input placeholder="Name" onChange={(e) => setName(e.target.value)} />
 
-        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+        <input
+          type="email"
+          placeholder="Email (example@domain.com)"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <input
           type="password"
