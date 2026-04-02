@@ -33,19 +33,3 @@ services:
           property: host
       - key: ALLOWED_ORIGINS
         value: "*" # Update this to your frontend URL after first deploy for better security
-
-  # 3. Frontend Client (Static Site)
-  - type: web
-    name: frontend
-    env: static
-    region: ohio
-    plan: free
-    rootDir: client/attendance
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          name: backend
-          type: web
-          property: url
