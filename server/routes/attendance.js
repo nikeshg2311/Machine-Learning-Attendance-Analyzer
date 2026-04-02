@@ -3,26 +3,79 @@
   const Attendance = require("../models/Attendance");
   const RiskReason = require("../models/RiskReason");
 
-  // SAVE ATTENDANCE
-  router.post("/add", async (req, res) => {
+  // GET ALL ATTENDANCE (with optional email query)
+  router.get("/", async (req, res) => {
     try {
-      const record = new Attendance(req.body);
-      await record.save();
-      res.send("Attendance Saved");
+      const { email } = req.query;
+      const query = email ? { email } : {};
+      console.log(`📋 Fetching attendance for: ${email || "All Students"}`);
+
+      const data = await Attendance.find(query).sort({ date: -1 });
+      console.log(`📊 Found ${data.length} records`);
+      res.json(data);
     } catch (err) {
-      console.log(err);
+      console.error("❌ Error fetching attendance:", err.message);
       res.status(500).send("Error");
     }
   });
 
-  // GET ATTENDANCE
-  router.get("/all", async (req, res) => {
-    const data = await Attendance.find();
-    res.json(data);
+  // SAVE ATTENDANCE (Root POST)
+  router.post("/", async (req, res) => {
+    try {
+      console.log("📝 Adding attendance for:", req.body.email);
+      const record = new Attendance(req.body);
+      await record.save();
+      console.log("✅ Attendance saved for:", req.body.email);
+      res.status(201).send("Attendance Saved");
+    } catch (err) {
+      console.error("❌ Error saving attendance:", err.message);
+      res.status(500).send("Error");
+    }
   });
+
+  // UPDATE ATTENDANCE
+  router.put("/:id", async (req, res) => {
+    try {
+      console.log(`🔄 Updating record: ${req.params.id}`);
+      const updated = await Attendance.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      if (!updated) {
+        console.warn(`⚠️ Record not found: ${req.params.id}`);
+        return res.status(404).send("Record not found");
+      }
+      console.log("✅ Attendance updated");
+      res.json(updated);
+    } catch (err) {
+      console.error("❌ Error updating attendance:", err.message);
+      res.status(500).send("Error");
+    }
+  });
+
+  // DELETE ATTENDANCE
+  router.delete("/:id", async (req, res) => {
+    try {
+      console.log(`🗑️ Deleting record: ${req.params.id}`);
+      const deleted = await Attendance.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        console.warn(`⚠️ Record already gone: ${req.params.id}`);
+        return res.status(404).send("Record not found");
+      }
+      console.log("✅ Attendance deleted");
+      res.send("Deleted successfully");
+    } catch (err) {
+      console.error("❌ Error deleting attendance:", err.message);
+      res.status(500).send("Error");
+    }
+  });
+
+
   // AI ADMIN PANEL DATA
   router.get("/analytics", async (req, res) => {
     try {
+      console.log("📈 Generating analytics...");
       const data = await Attendance.find();
 
       const result = {};
@@ -52,29 +105,67 @@
         };
       });
 
+      console.log(`✅ Analytics complete for ${analytics.length} students`);
       res.json(analytics);
 
     } catch (err) {
-      console.log(err);
+      console.error("❌ Analytics error:", err.message);
       res.status(500).send("Error");
     }
   });
 
   router.get("/student/:email", async (req, res) => {
-    const data = await Attendance.find({
-      email: req.params.email
-    });
-
-    res.json(data);
+    try {
+      console.log(`🧑‍🎓 Fetching data for student: ${req.params.email}`);
+      const data = await Attendance.find({
+        email: req.params.email
+      });
+      console.log(`📊 Found ${data.length} records for ${req.params.email}`);
+      res.json(data);
+    } catch (err) {
+      console.error("❌ Error fetching student data:", err.message);
+      res.status(500).send("Error");
+    }
   });
+
+
+  // --- Specific routes kept for legacy compatibility if needed ---
+
+  // SAVE ATTENDANCE (Legacy)
+  router.post("/add", async (req, res) => {
+    try {
+      console.log("📝 Adding attendance (Legacy) for:", req.body.email);
+      const record = new Attendance(req.body);
+      await record.save();
+      console.log("✅ Attendance saved (Legacy)");
+      res.send("Attendance Saved");
+    } catch (err) {
+      console.error("❌ Error (Legacy):", err.message);
+      res.status(500).send("Error");
+    }
+  });
+
+  // GET ALL ATTENDANCE (Legacy)
+  router.get("/all", async (req, res) => {
+    try {
+      console.log("📋 Fetching all attendance records (Legacy)...");
+      const data = await Attendance.find();
+      console.log(`📊 Found ${data.length} records`);
+      res.json(data);
+    } catch (err) {
+      console.error("❌ Error (Legacy):", err.message);
+      res.status(500).send("Error");
+    }
+  });
+
 
 const axios = require("axios");
 
 router.get("/ml/:email", async (req,res)=>{
 
   try {
-
     const email = req.params.email;
+    console.log(`🤖 ML Request for: ${email}`);
 
     // ⭐ LAST 30 DAYS DATE
     const last30Days = new Date();
@@ -88,16 +179,20 @@ router.get("/ml/:email", async (req,res)=>{
 
     const total = data.length;
     const present = data.filter(d=>d.status==="Present").length;
+    console.log(`📊 Recent stats for ${email}: Total=${total}, Present=${present}`);
 
     // CALL PYTHON ML SERVER
+    const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
+    console.log(`🔗 Calling ML server at: ${mlUrl}...`);
     const ml = await axios.get(
-      `http://localhost:8000/predict?total=${total}&present=${present}`
+      `${mlUrl}/predict?total=${total}&present=${present}`
     );
 
+    console.log("✅ ML prediction received!");
     res.send(ml.data);
 
   } catch(err){
-    console.log(err);
+    console.error("❌ ML Request error:", err.message);
     res.status(500).send("ML Error");
   }
 });
@@ -105,6 +200,7 @@ router.get("/ml/:email", async (req,res)=>{
 router.post("/risk-reason", async (req, res) => {
   try {
     const { name, email, reasonType, reasonText, proofImage } = req.body;
+    console.log(`📂 Saving risk reason for: ${email}`);
 
     if (!email || !reasonType || !reasonText) {
       return res.status(400).send("Missing required fields");
@@ -124,19 +220,22 @@ router.post("/risk-reason", async (req, res) => {
     });
 
     await record.save();
+    console.log("✅ Risk reason saved!");
     res.send("Risk reason saved");
   } catch (err) {
-    console.log(err);
+    console.error("❌ Error saving risk reason:", err.message);
     res.status(500).send("Error");
   }
 });
 
 router.get("/risk-reason/all", async (req, res) => {
   try {
+    console.log("📋 Fetching all risk reasons...");
     const data = await RiskReason.find().sort({ createdAt: -1 });
+    console.log(`📂 Found ${data.length} reasons`);
     res.json(data);
   } catch (err) {
-    console.log(err);
+    console.error("❌ Error fetching risk reasons:", err.message);
     res.status(500).send("Error");
   }
 });

@@ -1,0 +1,51 @@
+services:
+  # 1. Machine Learning Service (Python/FastAPI)
+  - type: web
+    name: ml-service
+    env: python
+    region: ohio
+    plan: free
+    rootDir: ml
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PORT
+        value: 10000
+
+  # 2. Backend Server (Node.js/Express)
+  - type: web
+    name: backend
+    env: node
+    region: ohio
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false # Requires user set in dashboard
+      - key: PORT
+        value: 10000
+      - key: ML_SERVICE_URL
+        fromService:
+          name: ml-service
+          type: web
+          property: host
+      - key: ALLOWED_ORIGINS
+        value: "*" # Update this to your frontend URL after first deploy for better security
+
+  # 3. Frontend Client (Static Site)
+  - type: static
+    name: frontend
+    env: static
+    region: ohio
+    plan: free
+    rootDir: client/attendance
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: backend
+          type: web
+          property: url

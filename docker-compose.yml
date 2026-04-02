@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  # Machine Learning Service (Python/FastAPI)
+  ml-service:
+    build: ./ml
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/predict?total=10&present=8"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend Server (Node.js/Express)
+  backend:
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - PORT=5000
+      - ML_SERVICE_URL=http://ml-service:8000
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:5173
+    depends_on:
+      ml-service:
+        condition: service_healthy
+
+  # Frontend Client (React/Vite served via Nginx)
+  frontend:
+    build: 
+      context: ./client/attendance
+      args:
+        - VITE_API_URL=http://localhost:5000/api
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
